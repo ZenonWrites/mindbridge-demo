@@ -1,0 +1,8 @@
+@tailwind base; @tailwind components; @tailwind utilities;
+body { @apply bg-mist text-ink font-sans; }
+.btn { @apply rounded-xl px-4 py-2.5 font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal disabled:opacity-40; }
+.btn-p { @apply btn bg-teal text-white hover:bg-ink; }
+.btn-s { @apply btn bg-white border border-sage text-ink hover:bg-sage-soft; }
+.card { @apply bg-white rounded-2xl border border-sage/60 p-5; }
+.tag { @apply inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

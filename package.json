@@ -1,0 +1,1 @@
+{"name":"mindbridge-demo","private":true,"scripts":{"setup":"npm install && cd server && npm install && cd ../client && npm install","dev":"concurrently -n api,web \"cd server && npm run dev\" \"cd client && npm run dev\""},"devDependencies":{"concurrently":"^8.2.2"}}
