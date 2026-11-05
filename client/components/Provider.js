@@ -1,20 +1,25 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ShieldAlert, Upload, ArrowUpRight } from 'lucide-react';
 import Chat from './Chat';
-import { sock } from '../lib/socket';
+import { API, sock } from '../lib/socket';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], HRS = ['10:00', '12:00', '16:00', '18:30'];
 const ST = { Upcoming: 'bg-teal-soft', 'In Progress': 'bg-amber-100', Completed: 'bg-sage-soft' };
 
-export default function Provider({ booking }) {
+export default function Provider() {
   const [tab, setTab] = useState('today'), [tier, setTier] = useState(1), [avail, setAvail] = useState({});
-  const [notes, setNotes] = useState(''), [crisis, setCrisis] = useState(false), [sent, setSent] = useState(false);
+  const [room, setRoom] = useState(null), [notes, setNotes] = useState(''), [crisis, setCrisis] = useState(false), [sent, setSent] = useState(false);
   const [appts, setAppts] = useState([
     { id: 'a1', client: 'Isha (19)', slot: '09:00', status: 'Completed' },
     { id: 'a2', client: 'Dev (24)', slot: '11:00', status: 'In Progress' },
-    ...(booking ? [{ id: booking.id, client: booking.client || 'Aarav (22)', slot: booking.slot, status: 'Upcoming', live: true }] : []),
   ]);
+  useEffect(() => { // real bookings made in the User tab arrive here live
+    const add = (b) => setAppts((a) => a.some((x) => x.id === b.id) ? a : [...a, { id: b.id, client: b.client, slot: b.slot, status: 'Upcoming', live: true }]);
+    fetch(`${API}/api/bookings`).then((r) => r.json()).then((l) => l.forEach(add)).catch(() => {});
+    const s = sock(); s.emit('join', { role: 'provider' }); s.on('booking', add);
+    return () => { s.off('booking', add); };
+  }, []);
   const tabs = [['today', "Today"], ['profile', 'Profile & availability'], ['session', 'Live session']];
   return (
     <div className="max-w-3xl mx-auto">
@@ -24,7 +29,7 @@ export default function Provider({ booking }) {
         {appts.map((a) => (
           <div key={a.id} className="card flex justify-between items-center gap-2">
             <div><b>{a.client}</b> · {a.slot} <span className={`tag ${ST[a.status]}`}>{a.status}</span></div>
-            {a.live && <button className="btn-p" onClick={() => { setAppts(appts.map((x) => x.id === a.id ? { ...x, status: 'In Progress' } : x)); setTab('session'); }}>Start session</button>}
+            {a.live && <button className="btn-p" onClick={() => { setAppts(appts.map((x) => x.id === a.id ? { ...x, status: 'In Progress' } : x)); setRoom(a.id); setTab('session'); }}>Start session</button>}
           </div>
         ))}
         <div className="card"><label className="font-semibold">{tier === 1 ? 'Non-clinical notes' : 'Structured session notes'}</label>
@@ -45,11 +50,11 @@ export default function Provider({ booking }) {
       </div>}
 
       {tab === 'session' && <div className="space-y-3">
-        <Chat role="provider" />
+        {room ? <Chat role="provider" room={room} /> : <p className="card text-sm">No active session. Start one from Today (the client must book in the User tab first).</p>}
         <div className="flex gap-2 flex-wrap">
           <label className="btn bg-alert text-white flex items-center gap-2 cursor-pointer"><ShieldAlert size={16} />Trigger crisis escalation
-            <input type="checkbox" className="sr-only" checked={crisis} onChange={(e) => { setCrisis(e.target.checked); if (e.target.checked) sock().emit('crisis'); }} /></label>
-          {tier < 3 && <button className="btn-s flex items-center gap-2" disabled={sent} onClick={() => { sock().emit('referral', { amount: 500 }); setSent(true); }}><ArrowUpRight size={16} />{sent ? 'Tier 3 transfer sent' : 'Recommend Tier 3 transfer (₹500 voucher)'}</button>}
+            <input type="checkbox" className="sr-only" checked={crisis} onChange={(e) => { setCrisis(e.target.checked); if (e.target.checked) sock().emit('crisis', { room }); }} /></label>
+          {tier < 3 && <button className="btn-s flex items-center gap-2" disabled={sent} onClick={() => { sock().emit('referral', { room, amount: 500 }); setSent(true); }}><ArrowUpRight size={16} />{sent ? 'Tier 3 transfer sent' : 'Recommend Tier 3 transfer (₹500 voucher)'}</button>}
         </div>
         {crisis && <div className="card border-alert"><b>Crisis protocol active.</b> Stay connected. The Tele-MANAS card is showing on the client's screen. Stay calm, keep the client talking, confirm their location and a trusted contact, and call 112 if there is immediate danger.</div>}
       </div>}

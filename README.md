@@ -9,7 +9,9 @@ Next.js 14 + Tailwind + Lucide (client, :3000) and Express + Socket.io (server, 
 npm run setup   # run once: installs root, server and client (do NOT use a postinstall hook, it recurses)
 npm run dev     # starts both
 ```
-Open http://localhost:3000. Open a second tab and switch to **Provider View** to chat both ways in the shared demo room.
+Open http://localhost:3000, then open **/user** and **/provider** in two separate browser windows (side by side). Book as the user; the appointment appears live in the provider window; press Start session to chat both ways in a private per-booking room.
+
+**Chat moderation** (client + server): masks links, UPI IDs, emails and phone numbers (including spelled-out digits); blocks off-platform contact (WhatsApp, Telegram, Instagram, Snapchat, GPay, etc.), threats and sexual solicitation; masks profanity. Self-harm language is never blocked: it opens the Tele-MANAS card for the user and alerts the provider.
 
 ## Demo walkthrough
 1. User View: OTP (any value) -> 5-question screener -> routed tier -> directory -> slot -> sandbox payment -> chat.

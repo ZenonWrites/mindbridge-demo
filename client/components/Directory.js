@@ -40,7 +40,7 @@ function Booking({ p, price, onClose, onBooked }) {
   const confirm = async () => {
     setBusy(true); await new Promise((r) => setTimeout(r, 1200)); // simulated Razorpay sandbox
     const body = { providerId: p.id, provider: p.name, tier: p.tier, date: day(d), slot: t, price, client: 'Aarav (22)' };
-    let b = body; try { b = await (await fetch(`${API}/api/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json(); } catch {}
+    let b = { ...body, id: 'local' }; try { b = await (await fetch(`${API}/api/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json(); } catch {}
     onBooked(b);
   };
   return (
