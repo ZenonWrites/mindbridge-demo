@@ -1,4 +1,4 @@
-# MindBridge (Demo)
+# MindBridge (Demo) ......
 
 > **Prototype for Demo Purposes Only — Not a Licensed Clinical Diagnostic Tool.**
 
